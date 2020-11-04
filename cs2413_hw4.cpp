@@ -137,7 +137,7 @@ class ModTable{
                 return '*';
             }
             //if collisionResolution is 2(meaning quadratic probing), then...
-            else if (collisionResolution == 2) {
+            else {
                 //initializes counter for use in quadratic hashing function
                 int i = 0;
                 //initializes searchIdx
