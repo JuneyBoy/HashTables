@@ -139,13 +139,68 @@ class ModTable{
 
 
 int main(){
-    Item* item = new Item(3,'A');
-    Item* item2 = new Item(6,'B');
-    ModTable* modTable = new ModTable(3,2);
+    int typeOfTable;
+    vector<int> keys;
+    vector<char> data;
+    vector<int> searchKeys;
+    vector<Item*> items;
+    int modNum;
 
-    modTable->add_item(item);
-    modTable->add_item(item2);
+    int key;
+    char datapt;
+    int searchKey;
+    cin >> key;
 
-    cout << modTable->search_mod_table(3);
-    cout << modTable->search_mod_table(6);
+    while(key > -1 ){
+        keys.push_back(key);
+        cin >> key;
+    }
+
+    cin >> datapt;
+    while(datapt != '*'){
+        data.push_back(datapt);
+        cin >> datapt;
+    }
+
+    cin >> typeOfTable;
+
+    if(typeOfTable == 1 || typeOfTable == 2){
+        cin >> modNum;
+    }
+
+    cin >> searchKey;
+
+    while(searchKey != -1){
+        searchKeys.push_back(searchKey);
+        cin >> searchKey;
+    }
+
+    switch(typeOfTable){
+        case 0:
+            DirectAddressTable* dat = new DirectAddressTable();
+            
+            for(int i = 0; i < keys.size(); ++i){
+                Item* item = new Item(keys.at(i), data.at(i));
+                dat->add_item(item);
+            }
+            
+            for(int j = 0; j < searchKeys.size(); ++j){
+                cout << dat->search_dat(searchKeys.at(j));
+            }
+            break;
+        
+        case 1:
+            ModTable* modTable = new ModTable(modNum, typeOfTable);
+            
+            for(int i = 0; i < keys.size(); ++i){
+                Item* item = new Item(keys.at(i), data.at(i));
+                modTable->add_item(item);
+            }
+            
+            for(int j = 0; j < searchKeys.size(); ++j){
+                cout << modTable->search_mod_table(searchKeys.at(j));
+            }
+            break;
+    }
+
 }
