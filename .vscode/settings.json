@@ -5,6 +5,7 @@
         "iostream": "cpp",
         "__hash_table": "cpp",
         "string": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "new": "cpp"
     }
 }
