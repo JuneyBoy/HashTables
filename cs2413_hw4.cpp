@@ -84,6 +84,33 @@ class ModTable{
         int modNum;
         //number to represent which collision resolution method shall be used
         int collisionResolution;
+        //method used to resize table to ensure capacity is a prime #
+        //really only necessary when quadratic probing so there isn't an infinite loop
+        int tableSizer(int num){
+            //variable to store whether current number is prime
+            bool isPrime;
+
+            //outer for loop iterates from num parameter to 2*num
+            //using Bertrand's postulate that states that for any integer greater than 3, there exists at least one prime number between n and 2*n
+            for(int i = num; i < 2*num; ++i){
+                //initializes isPrime to true
+                isPrime = true;
+                //inner for loop goes from 2 up to i
+                for(int j = 2; j < i; ++j){
+                    //if any of the numbers less than i divide into i evenly...
+                    if(i % j == 0){
+                        //i is not prime and the inner for loop is broken
+                        isPrime = false;
+                        break;
+                    }
+                }
+                //if the inner for loop ran all the way through without breaking, then i must be prime
+                if(isPrime == true){
+                    return i;
+                }
+            }
+            return num;
+        }
     
     public:
         //constructor takes in modNum and collisionResolution and initializes table with modNum nullptrs
@@ -91,11 +118,18 @@ class ModTable{
             this->modNum = modNum;
             this->collisionResolution = collisionResolution;
             //if modNum is 5, there only needs to be 5 indices of the vector (0-4) as no number mod 5 will have a remainder greater than 4
-            table.resize(modNum, nullptr);
+            //might need to be changed later on
+            this->table.resize(modNum, nullptr);
         }
         
         //adds Item to ModTable
         void add_item(Item* item){
+            //if the capacity of the table is not twice as large as the size and the table is using quadratic probing to resolve collisions...
+            if(!(this->table.capacity() > this->table.size()*2) && collisionResolution == 2){
+                //then there may be an infinite loop while probing and the table needs to be resized to the next prime number that is at least twice as large as the size
+                this->table.resize(this->tableSizer(this->table.size()*2), nullptr);
+            }
+
             //takes the mod of the key and stores the result as the index the Item should be inserted at
             int insertIdx = item->get_key() % modNum;
             
@@ -140,6 +174,7 @@ class ModTable{
             else {
                 //initializes counter for use in quadratic hashing function
                 int i = 0;
+
                 //initializes searchIdx
                 int searchIdx = (initIdx + i + i*i) % table.size();
                 
@@ -151,7 +186,7 @@ class ModTable{
                     }
                     //otherwise the counter is incremented and searchIdx is recalculated
                     ++i;
-                    searchIdx = (key + i + i*i) % table.size();
+                    searchIdx = (initIdx + i + i*i) % table.size();
                 }
                 //key must not exist in list so an asterisk is returned
                 return '*';
@@ -249,43 +284,38 @@ int main(){
     }
 
     //based on what table was asked to be created...
-    switch(typeOfTable){
-        //if table is a DAT...
-        case 0: {
-            //DAT created
-            DirectAddressTable* dat = new DirectAddressTable();
-            //for the length of the key vector...
-            for(int i = 0; i < keys.size(); ++i){
-                //create new Item with the corresponding key and datapt
-                Item* item = new Item(keys.at(i), data.at(i));
-                //add item to DAT
-                dat->add_item(item);
-            }
-            //for the length of the search keys vector...
-            for(int j = 0; j < searchKeys.size(); ++j){
-                //print out the data that was found
-                cout << dat->search_dat(searchKeys.at(j));
-            }
-            break;
+    //if table is a DAT...
+    if(typeOfTable == 0) {
+        //DAT created
+        DirectAddressTable* dat = new DirectAddressTable();
+        //for the length of the key vector...
+        for(int i = 0; i < keys.size(); ++i){
+            //create new Item with the corresponding key and datapt
+            Item* item = new Item(keys.at(i), data.at(i));
+            //add item to DAT
+            dat->add_item(item);
         }
-        //if table was not a DAT
-        case !0: {
-            //ModTable created with the appriopriate modNum and collision resolution
-            ModTable* modTable = new ModTable(modNum, typeOfTable);
-            //for the length of the key vector...
-            for(int i = 0; i < keys.size(); ++i){
-                //create new Item with the corresponding key and datapt
-                Item* item = new Item(keys.at(i), data.at(i));
-                //add item to ModTable
-                modTable->add_item(item);
-            }
-            //for the length of the search keys vector...
-            for(int j = 0; j < searchKeys.size(); ++j){
-                //print out the data that was found
-                cout << modTable->search_mod_table(searchKeys.at(j));
-            }
-            break;
+        //for the length of the search keys vector...
+        for(int j = 0; j < searchKeys.size(); ++j){
+            //print out the data that was found
+            cout << dat->search_dat(searchKeys.at(j));
         }
     }
-
+    //if table was not a DAT
+    else {
+        //ModTable created with the appriopriate modNum and collision resolution
+        ModTable* modTable = new ModTable(modNum, typeOfTable);
+        //for the length of the key vector...
+        for(int i = 0; i < keys.size(); ++i){
+            //create new Item with the corresponding key and datapt
+            Item* item = new Item(keys.at(i), data.at(i));
+            //add item to ModTable
+            modTable->add_item(item);
+        }
+        //for the length of the search keys vector...
+        for(int j = 0; j < searchKeys.size(); ++j){
+            //print out the data that was found
+            cout << modTable->search_mod_table(searchKeys.at(j));
+        }
+    }
 }
